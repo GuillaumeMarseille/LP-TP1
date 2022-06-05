@@ -5,8 +5,8 @@
 (* listes et des enregistrements.                                  *)
 (*******************************************************************)
 (* Étudiant(e):                                                    *)
-(* NOM: _______________________ PRÉNOM:___________________________ *)
-(* MATRICULE: _________________ PROGRAMME: _______________________ *)
+(* NOM: Marseille               PRÉNOM: Guillaume                  *)
+(* MATRICULE: 536 857 347       PROGRAMME: Bac Informatique        *)
 (*                                                                 *)
 (*******************************************************************)
 
@@ -38,7 +38,7 @@ module Plan : PLAN  = struct
 
    let num = ref 0
    let get_num () = (num:=!num+1);!num
-
+   
 (******************************************************************)
 (* Fonctions fournies (vous pouvez en ajouter au besoin ...)      *)
 (* ****************************************************************)
@@ -60,12 +60,24 @@ module Plan : PLAN  = struct
    let retourner_liste_clients_plan (p: plan) = match p with
        | Vide -> []
        | Ilist l  -> let t = map (fun i -> retourner_liste_clients_itineraire i) l in
-                        let r = concat t in r
-
+                     let r = concat t in r
+   
    (* itineraire_existe: num_itineraire -> plan -> bool *)
    let itineraire_existe (indice: num_itineraire) (p: plan) = match p with
        | Vide -> false
        | Ilist l -> exists (fun i -> (i.num = indice)) l
+   
+   (*-----------------------------Mes fonctions-----------------------------------*)
+   
+   (* clientExisteListe: nom_client -> client list -> bool *)
+   let rec clientExisteListe (nom: nom_client) (liste: client list) = match liste with
+       |[] -> false
+       |e::r -> (nom = e.nom) || (clientExisteListe nom r)
+
+   (* majListeItineraire : itineraire -> client list -> itineraire *)
+   let majListeItineraire i nl =
+     { i with liste_clients = nl }
+
 
 (******************************************************************)
 (* Fonctions à implanter				          *)
@@ -77,32 +89,33 @@ module Plan : PLAN  = struct
    (* @Exception: lance une exception (Err) si l’itinéraire existe déjà  *)
 
    let  ajouter_itineraire (i: itineraire) (p: plan) =
-       (* A corriger : il est conseillé d'utilsier le filtrage *)
-       Vide
-
+     if itineraire_existe i.num p then raise (Err "Itineraire existe deja")
+     else  match p with
+     | Vide -> Ilist [i]
+     | Ilist l -> Ilist(i::l);;
+   
    (* -- À IMPLANTER (6 PTS) -------------------------------------------------*)
    (* @Méthode : client_existe_itineraire: nom_client -> itineraire -> bool   *)
    (* @Description : Détermine si un client existe dans un itinéraire         *)
 
    let client_existe_itineraire (n: nom_client) (i: itineraire) =
-       (* A corriger *)
-       true
-
+   clientExisteListe n i.liste_clients;;
+   
    (* -- À IMPLANTER (7 PTS) -----------------------------------------*)
    (* @Méthode : client_existe_plan: nom_client -> plan -> bool       *)
    (* @Description : Détermine si un client existe dans un plan       *)
 
    let client_existe_plan (n: nom_client) (p:  plan) =
-       (* A corriger : il est conseillé d'utilsier le filtrage *)
-       true
+     let lc = retourner_liste_clients_plan p in  clientExisteListe n lc;;
 
    (* -- À IMPLANTER (8 PTS) ---------------------------------------------------------*)
    (* @Méthode : calculer_demande_totale_itineraire : itineraire -> demande_client    *)
    (* @Description : Calcul la demande totale des clients appartenant à un itinéraire *)
-
    let calculer_demande_totale_itineraire (i: itineraire) =
-       (* A corriger *)
-       0
+     let lc = retourner_liste_clients_itineraire i in
+       let ld = map (fun x -> x.demande) lc in
+         let t: demande_client = fold_right (+) ld 0 in
+           t;;
 
    (* -- À IMPLANTER (12 PTS) ------------------------------------------------------------*)
    (* @Méthode : ajouter_client: client -> itineraire -> itineraire                       *)
@@ -111,16 +124,25 @@ module Plan : PLAN  = struct
    (* @Exception: lance une exception (Err) si le client existe déjà                      *)
 
    let ajouter_client (c: client) (i: itineraire) =
-       (* A corriger *)
-       {num = 0; capacite = 0; liste_clients = []}
-
+   	let lc = retourner_liste_clients_itineraire i in
+   	    if clientExisteListe c.nom lc then raise (Err "Client existe deja")
+   	    else let nl = lc@[c] in
+                let ni = majListeItineraire i nl in
+                if ni.capacite < (calculer_demande_totale_itineraire ni) then raise (Err "Capacite insuffisante")
+                else ni;; 
+                    
+                                         
    (* -- À IMPLANTER (8 PTS) ----------------------------------------------------------------------*)
    (* @Méthode : ajouter_clients: (nom_client * demande_client) list -> itineraire -> itineraire   *)
    (* @Description : Ajoute plusieurs clients dans un itinéraire selon les informations reçues     *)
 
-   let ajouter_clients (lclt: (nom_client * demande_client) list) (i: itineraire) =
-       (* A corriger *)
-       {num = 0; capacite = 0; liste_clients = []}
+    let ajouter_clients (lclt: (nom_client * demande_client) list) (i: itineraire) =
+      let lcr = map (fun (x,y) -> {nom = x; demande = y}) lclt in
+       let rec ajouterClientsRec lcr it = match lcr with
+         | [] -> it
+         | e::r -> (ajouterClientsRec r (ajouter_client e it)) in
+            ajouterClientsRec lcr i;;
+
 
    (* -- À IMPLANTER (8 PTS) ----------------------------------------------*)
    (* @Méthode : supprimer_client: nom_client -> itineraire -> itineraire  *)
@@ -128,8 +150,12 @@ module Plan : PLAN  = struct
    (* @Exception: lance une exception (Err) si le client n'existe pas      *)
 
     let supprimer_client (n: nom_client) (i:itineraire) =
-       (* A corriger *)
-       {num = 0; capacite = 0; liste_clients = []}
+      let lc = retourner_liste_clients_itineraire i in
+      	if clientExisteListe n lc then 
+      	   let listeAjours = fold_right (fun c nlc-> if (c.nom = n) then nlc else c::nlc) lc [] in
+      	   majListeItineraire i listeAjours
+      	else raise (Err "Client inexistant");;
+
 
    (* -- À IMPLANTER (8 PTS) ----------------------------------------------------------------------*)
    (* @Méthode : ajouter_itineraires: capacite_itineraire list ->                                  *)
