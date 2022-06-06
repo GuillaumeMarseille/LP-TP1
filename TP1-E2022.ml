@@ -77,6 +77,9 @@ module Plan : PLAN  = struct
    (* majListeItineraire : itineraire -> client list -> itineraire *)
    let majListeItineraire i nl =
      { i with liste_clients = nl }
+   
+
+         
 
 
 (******************************************************************)
@@ -92,7 +95,7 @@ module Plan : PLAN  = struct
      if itineraire_existe i.num p then raise (Err "Itineraire existe deja")
      else  match p with
      | Vide -> Ilist [i]
-     | Ilist l -> Ilist(i::l);;
+     | Ilist l -> Ilist( l@[i]);;
    
    (* -- À IMPLANTER (6 PTS) -------------------------------------------------*)
    (* @Méthode : client_existe_itineraire: nom_client -> itineraire -> bool   *)
@@ -162,24 +165,41 @@ module Plan : PLAN  = struct
    (*                                   (nom_client * demande_client) list list -> plan -> plan    *)
    (* @Description : Ajoute dans un plan plusieurs itinéraires contenant leurs clients respectifs  *)
 
-   let  ajouter_itineraires (lcap: capacite_itineraire list) (litn: (nom_client * demande_client) list list) (p: plan) =
-       (* A corriger *)
-       Vide
-
+    let  ajouter_itineraires (lcap: capacite_itineraire list)
+                             (litn: (nom_client * demande_client) list list)
+                             (p: plan) =
+      let listeItineraires = fold_right2 (fun cap itn liste ->
+        (let it = creer_itineraire cap in ajouter_clients itn it)::liste) lcap litn [] in 
+           let rec ajouterItineraires lst pln = match lst with
+             | [] -> pln
+             | e::r -> ajouterItineraires r (ajouter_itineraire e pln) in
+           ajouterItineraires listeItineraires p;;
+    
    (* -- À IMPLANTER (12 PTS) --------------------------------------------------------------------------------*)
    (* @Méthode : retourner_numi_capresid: plan -> (num_itineraire * int)                                      *)
    (* @Description : Retourne le numéro de l'itinéraire et sa capacité résiduelle la plus élevée dans un plan *)
    (* @Exception: lance une exception (Err) si le plan est vide                                               *)
 
-   let retourner_numi_capresid  (p: plan) =
-       (* A corriger : il est conseillé d'utilsier le filtrage *)
-       (0,0)
+    let retourner_numi_capresid  (p: plan) =
+      let trouverPairMax (p: plan) =
+        let calculerResiduelle (i: itineraire) = 
+         i.capacite - calculer_demande_totale_itineraire i in
+           let x = ref (-1, min_int) in  match p with
+            | Vide -> raise (Err "Plan vide")
+            | Ilist l -> let rec trouverMaxResi (lstIt: itineraire list) =
+                    match lstIt with 
+                    | [] -> !x
+                    | e::r -> let cr = calculerResiduelle e in
+                       if (cr > snd !x) then x := (e.num, cr); trouverMaxResi r in
+                           trouverMaxResi l in
+                             let ans: (num_itineraire * int) = trouverPairMax p in ans;;
+    
 
    (* -- À IMPLANTER (7 PTS) -----------------------------------------------------*)
    (* @Méthode : afficher_itineraire: itineraire -> unit                          *)
    (* @Description : Affiche tous les noms de clients appartenant à un itinéraire *)
 
-   let afficher_itineraire (i: itineraire) =
+    let afficher_itineraire (i: itineraire) =
        (* A corriger *)
        ()
 
