@@ -167,9 +167,10 @@ module Plan : PLAN  = struct
 
     let  ajouter_itineraires (lcap: capacite_itineraire list)
                              (litn: (nom_client * demande_client) list list)
-                             (p: plan) =
-      let listeItineraires = fold_right2 (fun cap itn liste ->
-        (let it = creer_itineraire cap in ajouter_clients itn it)::liste) lcap litn [] in 
+                             (p: plan) =  let listeItineraires =
+                                            fold_left2 (fun liste cap itn ->
+                                                liste@[(let it = creer_itineraire cap
+                                                 in ajouter_clients itn it)]) [] lcap litn in 
            let rec ajouterItineraires lst pln = match lst with
              | [] -> pln
              | e::r -> ajouterItineraires r (ajouter_itineraire e pln) in
@@ -199,10 +200,11 @@ module Plan : PLAN  = struct
    (* @Méthode : afficher_itineraire: itineraire -> unit                          *)
    (* @Description : Affiche tous les noms de clients appartenant à un itinéraire *)
 
-    let afficher_itineraire (i: itineraire) =
-       (* A corriger *)
-       ()
 
+    let afficher_itineraire (i: itineraire) =
+      print_endline "test";;
+
+    
    (* -- À IMPLANTER (7 PTS) ------------------------------------------------------------------------*)
    (* @Méthode : afficher_plan: plan -> unit                                                         *)
    (* @Description : Affiche les noms des clients d'un plan et la capacité résiduelle la plus élevée *)
