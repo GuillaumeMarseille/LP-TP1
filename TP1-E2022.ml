@@ -95,14 +95,14 @@ module Plan : PLAN  = struct
      if itineraire_existe i.num p then raise (Err "Cet itineraire existe deja.")
      else  match p with
      | Vide -> Ilist [i]
-     | Ilist l -> Ilist( l@[i]);;
+     | Ilist l -> Ilist( l@[i])
    
    (* -- À IMPLANTER (6 PTS) -------------------------------------------------*)
    (* @Méthode : client_existe_itineraire: nom_client -> itineraire -> bool   *)
    (* @Description : Détermine si un client existe dans un itinéraire         *)
 
    let client_existe_itineraire (n: nom_client) (i: itineraire) =
-   clientExisteListe n i.liste_clients;;
+   clientExisteListe n i.liste_clients
    
    (* -- À IMPLANTER (7 PTS) -----------------------------------------*)
    (* @Méthode : client_existe_plan: nom_client -> plan -> bool       *)
@@ -118,7 +118,7 @@ module Plan : PLAN  = struct
      let lc = retourner_liste_clients_itineraire i in
        let ld = map (fun x -> x.demande) lc in
          let t: demande_client = fold_right (+) ld 0 in
-           t;;
+           t
 
    (* -- À IMPLANTER (12 PTS) ------------------------------------------------------------*)
    (* @Méthode : ajouter_client: client -> itineraire -> itineraire                       *)
@@ -131,8 +131,8 @@ module Plan : PLAN  = struct
    	    if clientExisteListe c.nom lc then raise (Err "Ce client existe deja.")
    	    else let nl = lc@[c] in
                 let ni = majListeItineraire i nl in
-                if ni.capacite < (calculer_demande_totale_itineraire ni) then raise (Err "La capacite de cet itinéraire ne permet pas d'ajouter ce client.")
-                else ni;; 
+                if ni.capacite < (calculer_demande_totale_itineraire ni) then raise (Err "La capacite de cet itineraire ne permet pas d'ajouter ce client.")
+                else ni
                     
                                          
    (* -- À IMPLANTER (8 PTS) ----------------------------------------------------------------------*)
@@ -144,7 +144,7 @@ module Plan : PLAN  = struct
        let rec ajouterClientsRec lcr it = match lcr with
          | [] -> it
          | e::r -> (ajouterClientsRec r (ajouter_client e it)) in
-            ajouterClientsRec lcr i;;
+            ajouterClientsRec lcr i
 
 
    (* -- À IMPLANTER (8 PTS) ----------------------------------------------*)
@@ -157,7 +157,7 @@ module Plan : PLAN  = struct
       	if clientExisteListe n lc then 
       	   let listeAjours = fold_right (fun c nlc-> if (c.nom = n) then nlc else c::nlc) lc [] in
       	   majListeItineraire i listeAjours
-      	else raise (Err "Le client n'existe pas.");;
+      	else raise (Err "Le client n'existe pas.")
 
 
    (* -- À IMPLANTER (8 PTS) ----------------------------------------------------------------------*)
@@ -174,7 +174,7 @@ module Plan : PLAN  = struct
            let rec ajouterItineraires lst pln = match lst with
              | [] -> pln
              | e::r -> ajouterItineraires r (ajouter_itineraire e pln) in
-           ajouterItineraires listeItineraires p;;
+           ajouterItineraires listeItineraires p
     
    (* -- À IMPLANTER (12 PTS) --------------------------------------------------------------------------------*)
    (* @Méthode : retourner_numi_capresid: plan -> (num_itineraire * int)                                      *)
@@ -193,7 +193,7 @@ module Plan : PLAN  = struct
                     | e::r -> let cr = calculerResiduelle e in
                        if (cr > snd !x) then x := (e.num, cr); trouverMaxResi r in
                            trouverMaxResi l in
-                             let ans: (num_itineraire * int) = trouverPairMax p in ans;;
+                             let ans: (num_itineraire * int) = trouverPairMax p in ans
     
 
    (* -- À IMPLANTER (7 PTS) -----------------------------------------------------*)
@@ -205,7 +205,7 @@ module Plan : PLAN  = struct
       let listeNomClients = fold_left (fun liste client -> liste@[client.nom]) [] lc in
       let str1 = Printf.sprintf "Itineraire %d: " i.num in
       let str2 = String.concat " " listeNomClients in
-      print_endline (String.cat str1 str2);;
+      print_endline (str1^str2)
     
    (* -- À IMPLANTER (7 PTS) ------------------------------------------------------------------------*)
    (* @Méthode : afficher_plan: plan -> unit                                                         *)
@@ -218,10 +218,7 @@ module Plan : PLAN  = struct
    		let rec afficherClients lstIt = match lstIt with 
    		  | [] -> Printf.printf "Capacite residuelle la plus elevee: %d appartenant a l'itineraire numero %d.\n" (snd numCap) (fst numCap)
    		| e::r -> afficher_itineraire e; afficherClients r in
-   		afficherClients l;;
-
-   let x = 2;;
-   
+   		afficherClients l
 end
 
 
