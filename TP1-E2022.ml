@@ -92,7 +92,7 @@ module Plan : PLAN  = struct
    (* @Exception: lance une exception (Err) si l’itinéraire existe déjà  *)
 
    let  ajouter_itineraire (i: itineraire) (p: plan) =
-     if itineraire_existe i.num p then raise (Err "Itineraire existe deja")
+     if itineraire_existe i.num p then raise (Err "Cet itineraire existe deja.")
      else  match p with
      | Vide -> Ilist [i]
      | Ilist l -> Ilist( l@[i]);;
@@ -128,10 +128,10 @@ module Plan : PLAN  = struct
 
    let ajouter_client (c: client) (i: itineraire) =
    	let lc = retourner_liste_clients_itineraire i in
-   	    if clientExisteListe c.nom lc then raise (Err "Client existe deja")
+   	    if clientExisteListe c.nom lc then raise (Err "Ce client existe deja.")
    	    else let nl = lc@[c] in
                 let ni = majListeItineraire i nl in
-                if ni.capacite < (calculer_demande_totale_itineraire ni) then raise (Err "Capacite insuffisante")
+                if ni.capacite < (calculer_demande_totale_itineraire ni) then raise (Err "La capacite de cet itinéraire ne permet pas d'ajouter ce client.")
                 else ni;; 
                     
                                          
@@ -157,7 +157,7 @@ module Plan : PLAN  = struct
       	if clientExisteListe n lc then 
       	   let listeAjours = fold_right (fun c nlc-> if (c.nom = n) then nlc else c::nlc) lc [] in
       	   majListeItineraire i listeAjours
-      	else raise (Err "Client inexistant");;
+      	else raise (Err "Le client n'existe pas.");;
 
 
    (* -- À IMPLANTER (8 PTS) ----------------------------------------------------------------------*)
@@ -186,7 +186,7 @@ module Plan : PLAN  = struct
         let calculerResiduelle (i: itineraire) = 
          i.capacite - calculer_demande_totale_itineraire i in
            let x = ref (-1, min_int) in  match p with
-            | Vide -> raise (Err "Plan vide")
+            | Vide -> raise (Err "Le plan est vide.")
             | Ilist l -> let rec trouverMaxResi (lstIt: itineraire list) =
                     match lstIt with 
                     | [] -> !x
@@ -198,22 +198,30 @@ module Plan : PLAN  = struct
 
    (* -- À IMPLANTER (7 PTS) -----------------------------------------------------*)
    (* @Méthode : afficher_itineraire: itineraire -> unit                          *)
-   (* @Description : Affiche tous les noms de clients appartenant à un itinéraire *)
-
+    (* @Description : Affiche tous les noms de clients appartenant à un itinéraire *)
 
     let afficher_itineraire (i: itineraire) =
-      print_endline "test";;
-
+      let lc = retourner_liste_clients_itineraire i in
+      let listeNomClients = fold_left (fun liste client -> liste@[client.nom]) [] lc in
+      let str1 = Printf.sprintf "Itineraire %d: " i.num in
+      let str2 = String.concat " " listeNomClients in
+      print_endline (String.cat str1 str2);;
     
    (* -- À IMPLANTER (7 PTS) ------------------------------------------------------------------------*)
    (* @Méthode : afficher_plan: plan -> unit                                                         *)
    (* @Description : Affiche les noms des clients d'un plan et la capacité résiduelle la plus élevée *)
    (* @Exception: lance une exception (Err) si le plan est vide                                      *)
 
-   let afficher_plan (p: plan) =
-       (* A corriger : il est conseillé d'utilsier le filtrage *)
-       ()
+   let afficher_plan (p: plan) = match p with
+   | Vide -> raise (Err "Le plan est vide.")
+   | Ilist l -> let numCap = retourner_numi_capresid p in
+   		let rec afficherClients lstIt = match lstIt with 
+   		  | [] -> Printf.printf "Capacite residuelle la plus elevee: %d appartenant a l'itineraire numero %d.\n" (snd numCap) (fst numCap)
+   		| e::r -> afficher_itineraire e; afficherClients r in
+   		afficherClients l;;
 
+   let x = 2;;
+   
 end
 
 
